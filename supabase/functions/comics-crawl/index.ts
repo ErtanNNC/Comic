@@ -82,12 +82,15 @@ export async function crawl() {
 
   const bySeries = new Map<number, WpPost[]>();
   for (const p of posts) {
-    // Most specific category = the one that is not a parent of another of the post's categories.
+    // A post belongs to every one of its most specific categories (a category that is
+    // not the parent of another of the post's categories). Cross-overs like
+    // "Civil War X-Man" therefore show up in both Civil War and X-Man.
     const ids = p.categories.filter((id) => catById.has(id) && id !== 1);
-    const leaf = ids.find((id) => !ids.some((o) => catById.get(o)?.parent === id)) ?? ids[0];
-    if (leaf === undefined) continue;
-    if (!bySeries.has(leaf)) bySeries.set(leaf, []);
-    bySeries.get(leaf)!.push(p);
+    const leaves = ids.filter((id) => !ids.some((o) => catById.get(o)?.parent === id));
+    for (const leaf of leaves) {
+      if (!bySeries.has(leaf)) bySeries.set(leaf, []);
+      bySeries.get(leaf)!.push(p);
+    }
   }
 
   const series = [];
@@ -160,12 +163,12 @@ Deno.serve(async (req) => {
 
     const rows = episodes.map(({ series_slug, ...e }) => ({ ...e, series_id: idBySlug.get(series_slug), crawled_at: now }));
     for (let i = 0; i < rows.length; i += 500) {
-      await db('comic_episodes?on_conflict=url', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: JSON.stringify(rows.slice(i, i + 500)) });
+      await db('comic_episodes?on_conflict=series_id,url', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: JSON.stringify(rows.slice(i, i + 500)) });
     }
-    const newEpisodeUrls = rows.filter((r) => !knownEps.has(r.url)).map((r) => r.url);
+    const newEpisodeUrls = [...new Set(rows.filter((r) => !knownEps.has(r.url)).map((r) => r.url))];
     const summary = {
       series_total: series.length,
-      episodes_total: rows.length,
+      episodes_total: new Set(rows.map((r) => r.url)).size,
       new_series: series.filter((s) => !knownSeries.has(s.slug)).length,
       new_episodes: newEpisodeUrls.length,
       new_episode_urls: newEpisodeUrls.slice(0, 500),

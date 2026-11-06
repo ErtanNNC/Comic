@@ -17,7 +17,7 @@ Kullanılan tüm native modüller Expo Go içinde var, o yüzden ilk denemeler i
 ## Katalog (sunucu tarafı)
 
 - `supabase/functions/comics-crawl`: cizgiarsiv.com'un WordPress API'sini (`/wp-json/wp/v2/categories` ve `posts`) okur. Her kategori bir seri, her yazı bir bölüm. Bölümün Google Drive dosya kimliği, yazıdaki gömülü önizlemeden alınır. Sonuçlar `comic_series` ve `comic_episodes` tablolarına yazılır.
-- Tarama her gece 00:07 UTC'de (İstanbul 03:07) `pg_cron` ile kendiliğinden çalışır. Sitedeki yeni seri ve bölümler eklenir. Her çalışma `comic_crawl_runs` tablosuna kaç yeni seri/bölüm geldiğiyle birlikte kaydedilir. İlk taramada 22 seri ve 336 bölüm geldi, hepsinin Drive bağlantısı var.
+- Tarama her gece 00:07 UTC'de (İstanbul 03:07) `pg_cron` ile kendiliğinden çalışır. Sitedeki yeni seri ve bölümler eklenir. Her çalışma `comic_crawl_runs` tablosuna kaç yeni seri/bölüm geldiğiyle birlikte kaydedilir. Sitedeki gibi 23 seri ve 336 bölüm var, hepsinin Drive bağlantısı var. Birden fazla seriye bağlı bölümler (ör. "Civil War X-Man") her iki seride de görünür.
 - Tablolar Supabase'deki **Yolda** projesinde, Yolda'nın kendi tablolarından ayrı duruyor. Uygulama yalnızca okuyabilir (RLS), yazma işini sadece tarama fonksiyonu yapar.
 - Uygulama açılışta **Katalog** sekmesini gösterir:
   - **Arama:** seri adı, grup ve açıklamada Türkçe karakterlere duyarsız arar ("orumcek" → "Örümcek"). 2 harften sonra bölüm adlarında da sunucu tarafında arama yapılır.
