@@ -18,9 +18,8 @@ export function detectKind(head: Uint8Array): ArchiveKind {
   return 'unknown';
 }
 
-export const KIND_MESSAGES: Record<Exclude<ArchiveKind, 'zip'>, string> = {
-  rar: 'Bu dosya CBR/RAR formatında. Şimdilik yalnızca CBZ/ZIP destekleniyor (CBR desteği sonraki adımda).',
-  pdf: 'Bu dosya PDF. Şimdilik yalnızca CBZ/ZIP destekleniyor (PDF desteği sonraki adımda).',
+export const KIND_MESSAGES: Record<Exclude<ArchiveKind, 'zip' | 'pdf'>, string> = {
+  rar: 'Bu dosya CBR/RAR formatında. Şimdilik CBZ/ZIP ve PDF destekleniyor (CBR desteği sonraki adımda).',
   '7z': 'Bu dosya 7z/CB7 formatında ve henüz desteklenmiyor.',
   html: 'Google Drive dosya yerine bir web sayfası döndürdü. Dosya herkese açık olmayabilir veya indirme kotası dolmuş olabilir; biraz sonra tekrar dene.',
   unknown: 'Dosya formatı tanınamadı.',

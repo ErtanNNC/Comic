@@ -92,3 +92,38 @@ test('extractZip streams images out in natural order and skips junk', async () =
   assert.equal(written.size, 3);
   for (const p of pages) assert.ok(written.has(p.file));
 });
+
+test('extractPdfImages lifts JPEG page images out of an image-only PDF', async () => {
+  const { extractPdfImages } = await import('../src/lib/pdf');
+  const j1 = jpeg(1440, 2212);
+  const j2 = jpeg(1280, 1993);
+  const parts: (string | Uint8Array)[] = [
+    '%PDF-1.4\n%\xe2\xe3\xcf\xd3\n',
+    `1 0 obj\n<</Type/XObject/Subtype/Image/Width 1440/Height 2212/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ${j1.length}>>stream\n`,
+    j1,
+    '\nendstream\nendobj\n',
+    '2 0 obj\n<</Length 3 0 R/Filter/FlateDecode>>stream\nxx stream yy\nendstream\nendobj\n',
+    '4 0 obj\n<</Type /XObject /Subtype /Image /Width 1280 /Height 1993 /Filter [/DCTDecode] /Length 9 0 R>>\nstream\r\n',
+    j2,
+    '\r\nendstream\nendobj\ntrailer\n%%EOF\n',
+  ];
+  const pdf = new Uint8Array(parts.flatMap((p) => (typeof p === 'string' ? [...p].map((c) => c.charCodeAt(0)) : [...p])));
+  const written = new Map<string, Uint8Array>();
+  let off = 0;
+  const pages = await extractPdfImages({
+    totalBytes: pdf.length,
+    read: async () => {
+      if (off >= pdf.length) return null;
+      const c = pdf.subarray(off, off + 5);
+      off += c.length;
+      return c;
+    },
+    write: (n, b) => written.set(n, b),
+  });
+  assert.deepEqual(pages, [
+    { file: 'p0000.jpg', w: 1440, h: 2212 },
+    { file: 'p0001.jpg', w: 1280, h: 1993 },
+  ]);
+  assert.deepEqual(written.get('p0000.jpg'), j1);
+  assert.deepEqual(written.get('p0001.jpg'), j2);
+});

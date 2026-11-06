@@ -45,7 +45,7 @@ export function isArchiveName(name: string): boolean {
 }
 
 export function isSupportedArchiveName(name: string): boolean {
-  return /\.(cbz|zip)$/i.test(name);
+  return /\.(cbz|zip|pdf)$/i.test(name);
 }
 
 export function isImageName(name: string): boolean {

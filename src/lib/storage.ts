@@ -1,6 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system';
 
 import { detectKind, extractZip, KIND_MESSAGES } from './archive';
+import { extractPdfImages } from './pdf';
 import type { Comic, Page, Progress, Settings } from './types';
 
 const ROOT = new Directory(Paths.document, 'comics');
@@ -63,7 +64,7 @@ export async function extractArchiveFile(src: File, comicId: string, onProgress:
   try {
     const head = handle.readBytesSync(16);
     const kind = detectKind(head);
-    if (kind !== 'zip') throw new Error(KIND_MESSAGES[kind]);
+    if (kind !== 'zip' && kind !== 'pdf') throw new Error(KIND_MESSAGES[kind]);
     handle.offset = 0;
 
     const dir = comicDir(comicId);
@@ -71,7 +72,8 @@ export async function extractArchiveFile(src: File, comicId: string, onProgress:
     dir.create({ intermediates: true });
 
     const total = handle.size ?? src.size;
-    const pages = await extractZip({
+    const extract = kind === 'pdf' ? extractPdfImages : extractZip;
+    const pages = await extract({
       totalBytes: total,
       read: async () => {
         if (handle.offset !== null && total && handle.offset >= total) return null;
@@ -87,7 +89,11 @@ export async function extractArchiveFile(src: File, comicId: string, onProgress:
     });
     if (pages.length === 0) {
       dir.delete();
-      throw new Error('Arşivde resim bulunamadı.');
+      throw new Error(
+        kind === 'pdf'
+          ? 'Bu PDF sayfa resimlerinden oluşmuyor (metin/vektör tabanlı). Bu tür PDF desteği sonraki adımda.'
+          : 'Arşivde resim bulunamadı.',
+      );
     }
     return pages;
   } finally {

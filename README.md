@@ -1,6 +1,6 @@
 # Panel: çizgi roman okuyucu
 
-Google Drive'daki (veya telefondaki) CBZ arşivlerini indirip cihazda saklayan ve rahat okutan bir mobil uygulama. Expo (SDK 58) ve Expo Router ile yazıldı. iOS ve Android'de çalışır.
+Google Drive'daki (veya telefondaki) CBZ ve PDF çizgi romanları indirip cihazda saklayan ve rahat okutan bir mobil uygulama. Expo (SDK 58) ve Expo Router ile yazıldı. iOS ve Android'de çalışır.
 
 ## Çalıştırma
 
@@ -23,8 +23,9 @@ Kullanılan tüm native modüller Expo Go içinde var, o yüzden ilk denemeler i
 **İndirme**
 - Google Drive **dosya** bağlantısı → doğrudan indirilir.
 - Google Drive **klasör** bağlantısı → içerik listelenir, alt klasörlerde gezilebilir, sayılar seçilip toplu indirilir. API anahtarı gerekmez (herkese açık `embeddedfolderview` sayfası okunur).
-- Telefondan CBZ/ZIP seçme.
+- Telefondan CBZ/ZIP/PDF seçme.
 - İndirme kuyruğu: ilerleme yüzdesi, hata mesajı, tekrar deneme. Drive kota sayfası ya da izin hatası döndüğünde bu algılanır ve açıklanır.
+- **PDF:** cizgiarsiv'deki PDF'ler sayfa başına bir JPEG resimden oluşuyor. Bu JPEG'ler PDF'in içinden olduğu gibi çıkarılır; PDF render motoru ya da native modül gerekmez ve Expo Go'da da çalışır. Örnek bir sayı (30 sayfa, 41 MB) yaklaşık 0,5 saniyede açıldı ve çıktı `pdfimages` aracıyla bayt bayt aynı.
 - Arşivler akış halinde (1 MB'lık parçalarla) açılır, böylece büyük CBZ dosyaları belleği doldurmaz. Sayfalar `Documents/comics/<id>/` altında tutulur ve okumak için internet gerekmez.
 
 **Okuyucu** (Marvel Unlimited'dan esinlenildi)
@@ -51,7 +52,7 @@ Kullanılan tüm native modüller Expo Go içinde var, o yüzden ilk denemeler i
 
 ## Yol haritası
 
-1. **CBR (RAR) ve PDF desteği.** Türkçe arşivlerin önemli bir kısmı CBR ya da PDF. Bunun için native modül gerekiyor (development build).
+1. **CBR (RAR) ve metin/vektör tabanlı PDF desteği.** Bunlar için native modül gerekiyor (development build).
 2. **Akıllı panel algılama:** sayfadaki panel kenarlarını bularak panel panel okuma.
 3. Arka planda indirme ve indirmeyi duraklatıp sürdürme (`File.createDownloadTask`).
 4. Arama, okuma listeleri, yazara ve yayınevine göre filtreleme.
