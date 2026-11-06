@@ -43,6 +43,12 @@ Kullanılan tüm native modüller Expo Go içinde var, o yüzden ilk denemeler i
 - **PDF:** cizgiarsiv'deki PDF'ler sayfa başına bir JPEG resimden oluşuyor. Bu JPEG'ler PDF'in içinden olduğu gibi çıkarılır; PDF render motoru ya da native modül gerekmez ve Expo Go'da da çalışır. Örnek bir sayı (30 sayfa, 41 MB) yaklaşık 0,5 saniyede açıldı ve çıktı `pdfimages` aracıyla bayt bayt aynı.
 - Arşivler akış halinde (1 MB'lık parçalarla) açılır, böylece büyük CBZ dosyaları belleği doldurmaz. Sayfalar `Documents/comics/<id>/` altında tutulur ve okumak için internet gerekmez.
 
+**Panel modu (rehberli okuma, varsayılan)**
+- Her sayfa önce bütün olarak görünür. Sonra ileri dokunuşu ya da kaydırmasıyla kamera panelden panele yumuşakça (480 ms) yakınlaşıp uzaklaşır. Odaktaki panelin dışı karartılır.
+- Paneller cihazda bulunur: sayfa yerel olarak 320 piksele küçültülür (expo-image-manipulator), JS'te çözülür (jpeg-js) ve oluklar boyunca özyinelemeli X-Y kesimiyle bölünür. Sayfa başına 2–16 ms sürer. Sonuç kütüphaneye kaydedilir; o anki ve sonraki sayfalar arka planda hesaplanır.
+- Telefonda ekran genişliğini dolduran şerit paneller sol ve sağ iki adımda büyütülür, böylece balonlar okunur hale gelir. Panel bulunamayan sayfalarda (splash, eğik paneller) önce üst, sonra alt yarıya yakınlaşılır.
+- Okuma modu menüdeki düğmeyle değişir: Panel → Sayfa → Dikey.
+
 **Okuyucu** (Marvel Unlimited'dan esinlenildi)
 - Tam ekran, siyah zemin. Ekranın ortasına dokununca menü açılır ya da kapanır.
 - Kenarlara dokunarak veya kaydırarak sayfa çevrilir.

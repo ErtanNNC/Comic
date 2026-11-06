@@ -29,6 +29,7 @@ type Store = {
   setFinished: (comicId: string, finished: boolean) => void;
   removeComic: (comicId: string) => void;
   updateSettings: (patch: Partial<Settings>) => void;
+  setPanels: (comicId: string, page: number, panels: [number, number, number, number][], rtl: boolean) => void;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -183,6 +184,17 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const setPanels = useCallback((comicId: string, page: number, panels: [number, number, number, number][], rtl: boolean) => {
+    setComics((cs) =>
+      cs.map((c) => {
+        if (c.id !== comicId || !c.pages[page]) return c;
+        const pages = c.pages.slice();
+        pages[page] = { ...pages[page], panels: panels.map((r) => r.map((v) => Math.round(v * 1000) / 1000) as [number, number, number, number]), panelsRtl: rtl };
+        return { ...c, pages };
+      }),
+    );
+  }, []);
+
   const updateSettings = useCallback((patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch })), []);
 
   const value = useMemo<Store>(
@@ -198,8 +210,9 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       setFinished,
       removeComic,
       updateSettings,
+      setPanels,
     }),
-    [comics, progress, settings, jobs, enqueue, retryJob, clearFinishedJobs, setPage, setFinished, removeComic, updateSettings],
+    [comics, progress, settings, jobs, enqueue, retryJob, clearFinishedJobs, setPage, setFinished, removeComic, updateSettings, setPanels],
   );
 
   return <Ctx value={value}>{children}</Ctx>;

@@ -4,6 +4,10 @@ export type Page = {
   /** Pixel width/height read from the image header (0 if unknown). */
   w: number;
   h: number;
+  /** Detected panels as normalised [x, y, w, h], in reading order (guided view). */
+  panels?: [number, number, number, number][];
+  /** Reading direction the panel order was computed for. */
+  panelsRtl?: boolean;
 };
 
 export type Comic = {
@@ -32,6 +36,8 @@ export type Settings = {
   /** Right-to-left paging (manga). */
   rtl: boolean;
   keepAwake: boolean;
+  /** Guided view: glide panel by panel instead of showing whole pages. */
+  guided: boolean;
 };
 
 export type JobStatus = 'queued' | 'downloading' | 'extracting' | 'done' | 'error';

@@ -9,7 +9,7 @@ const LIBRARY_FILE = new File(Paths.document, 'library.json');
 const PROGRESS_FILE = new File(Paths.document, 'progress.json');
 const SETTINGS_FILE = new File(Paths.document, 'settings.json');
 
-export const DEFAULT_SETTINGS: Settings = { mode: 'paged', rtl: false, keepAwake: true };
+export const DEFAULT_SETTINGS: Settings = { mode: 'paged', rtl: false, keepAwake: true, guided: true };
 
 function readJson<T>(file: File, fallback: T): T {
   try {

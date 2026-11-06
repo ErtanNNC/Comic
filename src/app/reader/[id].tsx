@@ -8,6 +8,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { issueLabel } from '@/components/comic-ui';
+import { GuidedReader } from '@/components/guided-reader';
 import { ZoomablePage } from '@/components/zoomable-page';
 import { C, Radius, Spacing } from '@/constants/theme';
 import { nextInSeries, useLibrary } from '@/lib/library-store';
@@ -21,7 +22,7 @@ const VIEWABILITY = { itemVisiblePercentThreshold: 55 };
 
 export default function ReaderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { comics, progress, settings, setPage, updateSettings } = useLibrary();
+  const { comics, progress, settings, setPage, updateSettings, setPanels } = useLibrary();
   const comic = comics.find((c) => c.id === id);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -39,6 +40,14 @@ export default function ReaderScreen() {
   const next = useMemo(() => (comic ? nextInSeries(comics, comic) : undefined), [comics, comic]);
   const vertical = settings.mode === 'vertical';
   const rtl = settings.rtl && !vertical;
+  const guided = settings.guided && !vertical;
+  const [stepInfo, setStepInfo] = useState({ step: 0, steps: 1 });
+  const onStep = useCallback((step: number, steps: number) => setStepInfo({ step, steps }), []);
+  const showEnd = useCallback(() => setUi(true), []);
+  const toggleUi = useCallback(() => setUi((v) => !v), []);
+  const modeLabel = vertical ? 'Dikey' : guided ? 'Panel' : 'Sayfa';
+  const cycleMode = () =>
+    updateSettings(guided ? { guided: false, mode: 'paged' } : vertical ? { guided: true, mode: 'paged' } : { mode: 'vertical' });
 
   // Keep the screen on while reading.
   useEffect(() => {
@@ -62,10 +71,10 @@ export default function ReaderScreen() {
   const goTo = useCallback(
     (i: number, animated = true) => {
       if (i < 0 || i >= total) return;
-      listRef.current?.scrollToIndex({ index: i, animated });
+      if (!guided) listRef.current?.scrollToIndex({ index: i, animated });
       setPageState(i);
     },
-    [total],
+    [total, guided],
   );
 
   const onTap = useCallback(
@@ -139,6 +148,19 @@ export default function ReaderScreen() {
             </Pressable>
           )}
         />
+      ) : guided ? (
+        <GuidedReader
+          comic={comic}
+          page={page}
+          width={width}
+          height={height}
+          rtl={rtl}
+          onPage={setPageState}
+          onToggleUi={toggleUi}
+          onEnd={showEnd}
+          onStep={onStep}
+          setPanels={setPanels}
+        />
       ) : (
         <FlatList
           key={`h-${width}-${rtl}`}
@@ -186,8 +208,8 @@ export default function ReaderScreen() {
                 {issueLabel(comic)}
               </Text>
             </View>
-            <Pressable onPress={() => updateSettings({ mode: vertical ? 'paged' : 'vertical' })} style={styles.chip}>
-              <Text style={styles.chipText}>{vertical ? 'Dikey' : 'Sayfa'}</Text>
+            <Pressable onPress={cycleMode} style={styles.chip}>
+              <Text style={styles.chipText}>{modeLabel}</Text>
             </Pressable>
             {!vertical && (
               <Pressable onPress={() => updateSettings({ rtl: !settings.rtl })} style={[styles.chip, { marginLeft: Spacing.sm }]}>
@@ -230,6 +252,7 @@ export default function ReaderScreen() {
             />
             <Text style={styles.pageText}>
               {page + 1} / {total}
+              {guided && stepInfo.steps > 1 ? `  ·  ${stepInfo.step === 0 ? 'Genel bakış' : `Panel ${stepInfo.step}/${stepInfo.steps - 1}`}` : ''}
             </Text>
           </Animated.View>
         </>

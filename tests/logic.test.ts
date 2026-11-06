@@ -134,3 +134,27 @@ test('extractPdfImages lifts JPEG page images out of an image-only PDF', async (
   assert.deepEqual(written.get('p0000.jpg'), j1);
   assert.deepEqual(written.get('p0001.jpg'), j2);
 });
+
+test('detectPanels finds panels in reading order and guidedSteps plans the camera', async () => {
+  const { detectPanels, guidedSteps } = await import('../src/lib/panels');
+  const W = 200, H = 300;
+  const data = new Uint8Array(W * H * 4).fill(255); // white page
+  const box = (x0: number, y0: number, x1: number, y1: number) => {
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) data.set([20, 20, 20, 255], (y * W + x) * 4);
+  };
+  box(10, 10, 190, 90); // wide top panel
+  box(10, 100, 95, 290); // bottom-left
+  box(105, 100, 190, 290); // bottom-right
+  const panels = detectPanels({ data, width: W, height: H });
+  assert.equal(panels.length, 3);
+  const px = panels.map(([x, y, w, h]) => [Math.round(x * W), Math.round(y * H), Math.round(w * W), Math.round(h * H)]);
+  assert.deepEqual(px, [[10, 10, 180, 80], [10, 100, 85, 190], [105, 100, 85, 190]]);
+  // RTL reads the bottom row right-to-left.
+  const rtl = detectPanels({ data, width: W, height: H }, { rtl: true });
+  assert.ok(rtl[1][0] > rtl[2][0]);
+
+  const steps = guidedSteps(panels, { w: W, h: H }, { w: 390, h: 844 });
+  assert.deepEqual(steps[0], [0, 0, 1, 1]); // overview first
+  assert.equal(steps.length, 1 + 2 + 2); // wide strip split in two halves on a phone
+  assert.equal(guidedSteps([], { w: 1000, h: 1500 }, { w: 390, h: 844 }).length, 3); // splash: top/bottom sweep
+});
