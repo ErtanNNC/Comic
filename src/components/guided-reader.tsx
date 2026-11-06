@@ -10,7 +10,7 @@ import { guidedSteps, type Rect } from '@/lib/panels';
 import { pageUri } from '@/lib/storage';
 import type { Comic } from '@/lib/types';
 
-const CAMERA = { duration: 480, easing: Easing.inOut(Easing.cubic) };
+const SPEED = { slow: 750, normal: 480, fast: 300 } as const;
 const MAX_ZOOM = 4.5;
 const DIM = 'rgba(0,0,0,0.88)';
 
@@ -20,6 +20,8 @@ type Props = {
   width: number;
   height: number;
   rtl: boolean;
+  speed?: keyof typeof SPEED;
+  dim?: boolean;
   onPage: (page: number) => void;
   onToggleUi: () => void;
   onEnd: () => void;
@@ -31,7 +33,7 @@ type Props = {
  * Guided view: the page is shown whole, then the camera glides from panel to panel
  * (zooming in and out) while everything outside the current panel is dimmed.
  */
-export function GuidedReader({ comic, page, width, height, rtl, onPage, onToggleUi, onEnd, onStep, setPanels }: Props) {
+export function GuidedReader({ comic, page, width, height, rtl, speed = 'normal', dim = true, onPage, onToggleUi, onEnd, onStep, setPanels }: Props) {
   const p = comic.pages[page];
   const pageW = p?.w || 1000;
   const pageH = p?.h || 1500;
@@ -91,6 +93,7 @@ export function GuidedReader({ comic, page, width, height, rtl, onPage, onToggle
   const boxH = useSharedValue(dispH);
   const opacity = useSharedValue(1);
 
+  const CAMERA = useMemo(() => ({ duration: SPEED[speed], easing: Easing.inOut(Easing.cubic) }), [speed]);
   const aim = useCallback(
     (r: Rect, animate: boolean) => {
       const [x, y, w, h] = r;
@@ -112,7 +115,7 @@ export function GuidedReader({ comic, page, width, height, rtl, onPage, onToggle
         boxH.set(target.bh);
       }
     },
-    [width, height, dispW, dispH, scale, tx, ty, boxW, boxH],
+    [width, height, dispW, dispH, scale, tx, ty, boxW, boxH, CAMERA],
   );
 
   // Move the camera. Within a page it glides; on a new page it cuts, then fades in.
@@ -202,10 +205,14 @@ export function GuidedReader({ comic, page, width, height, rtl, onPage, onToggle
           <Image source={{ uri: pageUri(comic.id, p) }} style={StyleSheet.absoluteFill} contentFit="contain" recyclingKey={`g-${comic.id}`} />
         </Animated.View>
         {/* Spotlight: dim everything outside the current panel. */}
-        <Animated.View pointerEvents="none" style={[styles.dim, { top: 0, left: 0, right: 0 }, topStyle]} />
-        <Animated.View pointerEvents="none" style={[styles.dim, { bottom: 0, left: 0, right: 0 }, bottomStyle]} />
-        <Animated.View pointerEvents="none" style={[styles.dim, { left: 0 }, sideStyle]} />
-        <Animated.View pointerEvents="none" style={[styles.dim, { right: 0 }, sideStyle]} />
+        {dim && (
+          <>
+            <Animated.View pointerEvents="none" style={[styles.dim, { top: 0, left: 0, right: 0 }, topStyle]} />
+            <Animated.View pointerEvents="none" style={[styles.dim, { bottom: 0, left: 0, right: 0 }, bottomStyle]} />
+            <Animated.View pointerEvents="none" style={[styles.dim, { left: 0 }, sideStyle]} />
+            <Animated.View pointerEvents="none" style={[styles.dim, { right: 0 }, sideStyle]} />
+          </>
+        )}
         {/* Warm the cache for the next page so page turns don't flash. */}
         {comic.pages[page + 1] && (
           <Image source={{ uri: pageUri(comic.id, comic.pages[page + 1]) }} style={styles.prefetch} recyclingKey={`gp-${comic.id}`} />

@@ -30,7 +30,10 @@ export default function LibraryScreen() {
   if (comics.length === 0) {
     return (
       <View style={[styles.empty, { paddingTop: insets.top + Spacing.xxl }]}>
-        <Text style={styles.brand}>PANEL</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={styles.brand}>PANEL</Text>
+          <SettingsButton />
+        </View>
         <Text style={styles.emptyTitle}>Kütüphanen boş</Text>
         <Text style={styles.emptyText}>
           Katalogdan bir seri seç ve bölümleri indir. İndirilenler cihazda
@@ -51,9 +54,12 @@ export default function LibraryScreen() {
       contentInsetAdjustmentBehavior="never">
       <View style={styles.header}>
         <Text style={styles.brand}>PANEL</Text>
-        <Text style={styles.meta}>
-          {series.length} seri · {comics.length} sayı
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md }}>
+          <Text style={styles.meta}>
+            {series.length} seri · {comics.length} sayı
+          </Text>
+          <SettingsButton />
+        </View>
       </View>
 
       {continueReading.length > 0 && (
@@ -127,6 +133,14 @@ export default function LibraryScreen() {
   );
 }
 
+function SettingsButton() {
+  return (
+    <Pressable onPress={() => router.push('/settings')} hitSlop={10} style={({ pressed }) => [styles.gear, pressed && { opacity: 0.6 }]}>
+      <Text style={styles.gearText}>⚙︎</Text>
+    </Pressable>
+  );
+}
+
 function FoldersRow() {
   const { folders, createFolder } = useLibrary();
   const [creating, setCreating] = useState(false);
@@ -159,6 +173,8 @@ function FoldersRow() {
 }
 
 const styles = StyleSheet.create({
+  gear: { width: 34, height: 34, borderRadius: 17, backgroundColor: C.surface, alignItems: 'center', justifyContent: 'center' },
+  gearText: { color: C.text, fontSize: 18 },
   folder: { width: 128, height: 96, borderRadius: Radius.md, backgroundColor: C.surface, padding: Spacing.md, justifyContent: 'space-between', borderCurve: 'continuous' },
   folderNew: { backgroundColor: 'transparent', borderWidth: 1, borderStyle: 'dashed', borderColor: C.border },
   folderIcon: { color: C.accent, fontSize: 18 },

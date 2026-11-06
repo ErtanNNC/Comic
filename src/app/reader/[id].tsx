@@ -155,6 +155,8 @@ export default function ReaderScreen() {
           width={width}
           height={height}
           rtl={rtl}
+          speed={settings.guidedSpeed}
+          dim={settings.guidedDim}
           onPage={setPageState}
           onToggleUi={toggleUi}
           onEnd={showEnd}

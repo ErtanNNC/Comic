@@ -10,7 +10,15 @@ const PROGRESS_FILE = new File(Paths.document, 'progress.json');
 const SETTINGS_FILE = new File(Paths.document, 'settings.json');
 const FOLDERS_FILE = new File(Paths.document, 'folders.json');
 
-export const DEFAULT_SETTINGS: Settings = { mode: 'paged', rtl: false, keepAwake: true, guided: true };
+export const DEFAULT_SETTINGS: Settings = {
+  mode: 'paged',
+  rtl: false,
+  keepAwake: true,
+  guided: true,
+  guidedSpeed: 'normal',
+  guidedDim: true,
+  updatesSeenAt: 0,
+};
 
 function readJson<T>(file: File, fallback: T): T {
   try {
@@ -30,7 +38,12 @@ export const loadLibrary = () => readJson<Comic[]>(LIBRARY_FILE, []);
 export const saveLibrary = (c: Comic[]) => writeJson(LIBRARY_FILE, c);
 export const loadProgress = () => readJson<Record<string, Progress>>(PROGRESS_FILE, {});
 export const saveProgress = (p: Record<string, Progress>) => writeJson(PROGRESS_FILE, p);
-export const loadSettings = () => ({ ...DEFAULT_SETTINGS, ...readJson<Partial<Settings>>(SETTINGS_FILE, {}) });
+export const loadSettings = (): Settings => {
+  const s = { ...DEFAULT_SETTINGS, ...readJson<Partial<Settings>>(SETTINGS_FILE, {}) };
+  // First launch: treat the last week as "new" rather than the whole archive.
+  if (!s.updatesSeenAt) s.updatesSeenAt = Date.now() - 7 * 86400000;
+  return s;
+};
 export const saveSettings = (s: Settings) => writeJson(SETTINGS_FILE, s);
 export const loadFolders = () =>
   readJson<Folder[]>(FOLDERS_FILE, [
@@ -112,6 +125,11 @@ export function tempDir(name: string): Directory {
   const d = new Directory(Paths.cache, 'imports', name);
   d.create({ intermediates: true, idempotent: true });
   return d;
+}
+
+export function comicBytes(id: string): number {
+  const d = comicDir(id);
+  return d.exists ? (d.size ?? 0) : 0;
 }
 
 export function storageUsed(): number {

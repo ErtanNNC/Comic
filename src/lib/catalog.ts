@@ -61,6 +61,14 @@ export function fetchLatestEpisodes(): Promise<FeedEpisode[]> {
   return rest<FeedEpisode[]>(`comic_episodes?select=${EP_FIELDS}&order=published_at.desc&limit=20`);
 }
 
+/** Episodes published in the last 60 days, newest first, one row per episode. */
+export async function fetchUpdates(): Promise<FeedEpisode[]> {
+  const since = new Date(Date.now() - 60 * 86400000).toISOString();
+  const rows = await rest<FeedEpisode[]>(`comic_episodes?select=${EP_FIELDS}&published_at=gte.${since}&order=published_at.desc&limit=300`);
+  const seen = new Set<string>();
+  return rows.filter((r) => (seen.has(r.url) ? false : (seen.add(r.url), true)));
+}
+
 /** Episode title search across all series. */
 export function searchEpisodes(q: string): Promise<FeedEpisode[]> {
   const term = q.replace(/[*,()]/g, ' ').trim();

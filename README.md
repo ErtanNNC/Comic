@@ -1,6 +1,6 @@
 # Panel: çizgi roman okuyucu
 
-Google Drive'daki (veya telefondaki) CBZ ve PDF çizgi romanları indirip cihazda saklayan ve rahat okutan bir mobil uygulama. Expo (SDK 58) ve Expo Router ile yazıldı. iOS ve Android'de çalışır.
+Google Drive'daki (veya telefondaki) CBZ ve PDF çizgi romanları indirip cihazda saklayan ve rahat okutan bir mobil uygulama. Expo (SDK 58) ve Expo Router ile yazıldı. Logo kaynakları (SVG) `assets/brand/` altında. iOS ve Android'de çalışır.
 
 ## Çalıştırma
 
@@ -8,7 +8,6 @@ Google Drive'daki (veya telefondaki) CBZ ve PDF çizgi romanları indirip cihazd
 npm install
 npx expo start          # QR kodu Expo Go ile okut
 npm test                # dosya adı / Drive / CBZ / PDF testleri
-npm run test:site       # Keşfet betiği, sahte site üzerinde (Playwright)
 npm run typecheck && npx expo lint
 ```
 
@@ -34,12 +33,15 @@ Kullanılan tüm native modüller Expo Go içinde var, o yüzden ilk denemeler i
 - Sayılar seri halinde gruplanır. Seri adı ve sayı numarası dosya adından çıkarılır (`Batman_012_(2016).cbz` → *Batman #12*). Drive klasöründen indirilenlerde seri adı olarak klasör adı kullanılır.
 - Seri sayfası: sayı sırası, ilerleme çubukları, "Oku / Devam et" (ilk okunmamış sayıyı açar). Uzun basınca okundu işaretleme ve cihazdan silme seçenekleri çıkar.
 
-**Keşfet (cizgiarsiv.com uygulamanın içinde)**
-- Site uygulamanın içindeki tarayıcıda açılır, gezinmek sitedekiyle aynı.
-- **Bölüm sayfasında:** "Bu bölümü indir" düğmesi. Sayfaya gömülü Google Drive dosyası otomatik bulunur.
-- **Seri sayfasında:** "Tüm seriyi indir" düğmesi. Sayfalama (`/page/N/`) takip edilir, her bölüm sayfası taranıp Drive dosyaları toplanır, onay alındıktan sonra hepsi kuyruğa eklenir. Seri adı sayfa başlığından alınır.
-- Kütüphanede zaten olan ya da inmekte olan bölümler atlanır.
-- Betik sitenin HTML yapısına bağlı değil: Drive bağlantılarını sayfanın herhangi bir yerinden bulur ve bölüm listesini, aynı siteye giden bağlantıların en kalabalık grubu olarak tahmin eder. Kenar çubukları ve menüler hariç tutulur. `npm run test:site` bu betiği sitenin sahte bir kopyasında Chromium ile test eder.
+**Yenilikler sekmesi**
+- Son 60 günde eklenen bölümler tarihe göre gruplanır: Bugün, Dün, Bu hafta, Bu ay.
+- En üstte **"Takip ettiğin seriler"** bölümü var. Klasörlerindeki, indirdiğin ya da okuduğun serilerin yeni bölümleri burada toplanır ve tek dokunuşla indirilir.
+- Son ziyaretinden beri gelenler kırmızı noktayla işaretlenir. Sekmede okunmamış sayısını gösteren bir rozet çıkar.
+
+**Profil ve ayarlar** (Kütüphane'de sağ üstteki ⚙︎)
+- Okuma istatistikleri: okunan sayı, okunan sayfa, seri sayısı.
+- Okuma ayarları: varsayılan mod (Panel / Sayfa / Dikey), panel geçiş hızı, panel dışını karartma, manga yönü, ekranı açık tutma.
+- Depolama: toplam kaplanan alan, seri başına boyut ve silme, okunanları toplu silme.
 
 **İndirme**
 - Google Drive **dosya** bağlantısı → doğrudan indirilir.

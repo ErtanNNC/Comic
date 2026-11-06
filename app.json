@@ -8,7 +8,7 @@
     "scheme": "panel",
     "userInterfaceStyle": "dark",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.noneedcode.panel"
     },
@@ -33,7 +33,7 @@
         {
           "backgroundColor": "#0F0F12",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 180
         }
       ]
     ],

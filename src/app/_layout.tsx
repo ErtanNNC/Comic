@@ -27,6 +27,7 @@ export default function RootLayout() {
           <Stack screenOptions={{ headerStyle: { backgroundColor: C.bg }, headerTintColor: C.text, contentStyle: { backgroundColor: C.bg } }}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="catalog/[id]" options={{ title: '', headerBackTitle: 'Katalog' }} />
+            <Stack.Screen name="settings" options={{ title: 'Profil ve ayarlar', headerBackTitle: 'Geri' }} />
             <Stack.Screen name="folder/[id]" options={{ title: '', headerBackTitle: 'Kütüphane' }} />
             <Stack.Screen name="series/[name]" options={{ title: '', headerBackTitle: 'Kütüphane' }} />
             <Stack.Screen

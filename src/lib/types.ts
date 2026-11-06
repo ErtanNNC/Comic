@@ -38,6 +38,12 @@ export type Settings = {
   keepAwake: boolean;
   /** Guided view: glide panel by panel instead of showing whole pages. */
   guided: boolean;
+  /** Camera speed between panels. */
+  guidedSpeed: 'slow' | 'normal' | 'fast';
+  /** Dim everything outside the current panel. */
+  guidedDim: boolean;
+  /** Episodes published after this (ms) count as unseen on the Yenilikler tab. */
+  updatesSeenAt: number;
 };
 
 export type JobStatus = 'queued' | 'downloading' | 'extracting' | 'done' | 'error';
