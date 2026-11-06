@@ -1,10 +1,11 @@
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, ProgressBar } from '@/components/comic-ui';
+import { FolderSheet } from '@/components/folder-sheet';
 import { C, Radius, Spacing } from '@/constants/theme';
 import { fetchEpisodes, fetchSeries, useCatalog, type CatalogEpisode, type CatalogSeries } from '@/lib/catalog';
 import { useLibrary } from '@/lib/library-store';
@@ -13,7 +14,8 @@ export default function CatalogSeriesScreen() {
   const { id, title } = useLocalSearchParams<{ id: string; title?: string }>();
   const seriesId = Number(id);
   const insets = useSafeAreaInsets();
-  const { comics, jobs, progress, enqueue } = useLibrary();
+  const { comics, jobs, progress, enqueue, folders } = useLibrary();
+  const [sheet, setSheet] = useState(false);
 
   const loadEpisodes = useCallback(() => fetchEpisodes(seriesId), [seriesId]);
   const { data: episodes, error, loading, refresh } = useCatalog<CatalogEpisode[]>(`episodes-${seriesId}`, loadEpisodes);
@@ -38,6 +40,7 @@ export default function CatalogSeriesScreen() {
     enqueue(fresh.map((e) => ({ name: e.title, source: { kind: 'drive' as const, fileId: e.drive_id!, series: seriesTitle, issue: e.number ?? undefined } })));
   };
 
+  const inFolders = folders.filter((f) => f.series.includes(seriesTitle));
   const missing = (episodes ?? []).filter((e) => e.drive_id && !byDrive.has(e.drive_id));
 
   const downloadAll = () => {
@@ -63,6 +66,12 @@ export default function CatalogSeriesScreen() {
               <Text style={styles.heroTitle}>{seriesTitle}</Text>
               <Text style={styles.meta}>{episodes ? `${episodes.length} bölüm` : ''}</Text>
               {missing.length > 0 && <Button title={`Tümünü indir (${missing.length})`} onPress={downloadAll} style={{ marginTop: Spacing.md }} />}
+              <Button
+                title={inFolders.length ? `▣ ${inFolders.map((f) => f.name).join(', ')}` : '▣ Klasöre ekle'}
+                kind="ghost"
+                onPress={() => setSheet(true)}
+                style={{ marginTop: Spacing.sm }}
+              />
             </View>
           </View>
         }
@@ -108,6 +117,7 @@ export default function CatalogSeriesScreen() {
           );
         }}
       />
+      <FolderSheet series={sheet ? seriesTitle : null} onClose={() => setSheet(false)} />
     </>
   );
 }

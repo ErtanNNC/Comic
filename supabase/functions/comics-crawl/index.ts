@@ -4,7 +4,8 @@
  * Series  = WordPress categories that have posts (parent category = group).
  * Episode = a post; its Google Drive file id comes from the embedded preview iframe.
  *
- * GET/POST /comics-crawl          → crawl and upsert (skips if crawled < 10 min ago)
+ * GET/POST /comics-crawl          → crawl and upsert (skips if crawled < 10 min ago);
+ *                                    every run is logged in comic_crawl_runs with what was new
  * GET      /comics-crawl?dry=1    → crawl only, return what would be written
  */
 
@@ -141,6 +142,15 @@ Deno.serve(async (req) => {
     if (params.get('dry') === '1') return Response.json({ postCount, series, sample: episodes.slice(0, 5), missingDrive: episodes.filter((e) => !e.drive_id).map((e) => e.url) });
 
     const now = new Date().toISOString();
+    // What do we already have? (to report what's new)
+    const knownSeries = new Set(((await db('comic_series?select=slug')) as { slug: string }[]).map((r) => r.slug));
+    const knownEps = new Set<string>();
+    for (let from = 0; ; from += 1000) {
+      const page = (await db(`comic_episodes?select=url&order=id&offset=${from}&limit=1000`)) as { url: string }[];
+      page.forEach((r) => knownEps.add(r.url));
+      if (page.length < 1000) break;
+    }
+
     const saved = (await db('comic_series?on_conflict=slug&select=id,slug', {
       method: 'POST',
       prefer: 'resolution=merge-duplicates,return=representation',
@@ -152,8 +162,21 @@ Deno.serve(async (req) => {
     for (let i = 0; i < rows.length; i += 500) {
       await db('comic_episodes?on_conflict=url', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: JSON.stringify(rows.slice(i, i + 500)) });
     }
-    return Response.json({ ok: true, series: series.length, episodes: rows.length, withoutDrive: rows.filter((r) => !r.drive_id).length });
+    const newEpisodeUrls = rows.filter((r) => !knownEps.has(r.url)).map((r) => r.url);
+    const summary = {
+      series_total: series.length,
+      episodes_total: rows.length,
+      new_series: series.filter((s) => !knownSeries.has(s.slug)).length,
+      new_episodes: newEpisodeUrls.length,
+      new_episode_urls: newEpisodeUrls.slice(0, 500),
+    };
+    await db('comic_crawl_runs', { method: 'POST', prefer: 'return=minimal', body: JSON.stringify({ ...summary, started_at: now, finished_at: new Date().toISOString() }) });
+    return Response.json({ ok: true, ...summary, withoutDrive: rows.filter((r) => !r.drive_id).length });
   } catch (e) {
-    return Response.json({ error: String(e instanceof Error ? e.message : e) }, { status: 500 });
+    const error = String(e instanceof Error ? e.message : e);
+    try {
+      await db('comic_crawl_runs', { method: 'POST', prefer: 'return=minimal', body: JSON.stringify({ error, finished_at: new Date().toISOString() }) });
+    } catch {}
+    return Response.json({ error }, { status: 500 });
   }
 });

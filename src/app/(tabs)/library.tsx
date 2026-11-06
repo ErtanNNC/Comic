@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Cover, issueLabel, ProgressBar, SectionTitle } from '@/components/comic-ui';
-import { C, COVER_RATIO, Spacing } from '@/constants/theme';
+import { NameDialog } from '@/components/folder-sheet';
+import { C, COVER_RATIO, Radius, Spacing } from '@/constants/theme';
 import { groupSeries, upNext, useLibrary } from '@/lib/library-store';
 
 export default function LibraryScreen() {
@@ -36,6 +37,9 @@ export default function LibraryScreen() {
           saklanır, internetsiz okunur.
         </Text>
         <Button title="Kataloğa git" onPress={() => router.navigate('/')} style={{ marginTop: Spacing.xl, alignSelf: 'stretch' }} />
+        <View style={{ marginTop: Spacing.xxl, marginHorizontal: -Spacing.xl }}>
+          <FoldersRow />
+        </View>
       </View>
     );
   }
@@ -82,6 +86,8 @@ export default function LibraryScreen() {
         </View>
       )}
 
+      <FoldersRow />
+
       <View style={{ paddingHorizontal: Spacing.lg }}>
         <SectionTitle>Seriler</SectionTitle>
         <View style={[styles.grid, { gap }]}>
@@ -121,7 +127,43 @@ export default function LibraryScreen() {
   );
 }
 
+function FoldersRow() {
+  const { folders, createFolder } = useLibrary();
+  const [creating, setCreating] = useState(false);
+  return (
+    <View style={{ marginBottom: Spacing.xl }}>
+      <View style={{ paddingHorizontal: Spacing.lg }}>
+        <SectionTitle>Klasörler</SectionTitle>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: Spacing.lg, gap: Spacing.md }}>
+        {folders.map((f) => (
+          <Pressable
+            key={f.id}
+            onPress={() => router.push({ pathname: '/folder/[id]', params: { id: f.id } })}
+            style={({ pressed }) => [styles.folder, pressed && { opacity: 0.7 }]}>
+            <Text style={styles.folderIcon}>▣</Text>
+            <Text style={styles.folderName} numberOfLines={2}>
+              {f.name}
+            </Text>
+            <Text style={styles.folderCount}>{f.series.length} seri</Text>
+          </Pressable>
+        ))}
+        <Pressable onPress={() => setCreating(true)} style={({ pressed }) => [styles.folder, styles.folderNew, pressed && { opacity: 0.7 }]}>
+          <Text style={[styles.folderIcon, { color: C.textDim }]}>＋</Text>
+          <Text style={[styles.folderName, { color: C.textDim }]}>Yeni klasör</Text>
+        </Pressable>
+      </ScrollView>
+      <NameDialog visible={creating} title="Yeni klasör" onSubmit={(n) => createFolder(n)} onClose={() => setCreating(false)} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  folder: { width: 128, height: 96, borderRadius: Radius.md, backgroundColor: C.surface, padding: Spacing.md, justifyContent: 'space-between', borderCurve: 'continuous' },
+  folderNew: { backgroundColor: 'transparent', borderWidth: 1, borderStyle: 'dashed', borderColor: C.border },
+  folderIcon: { color: C.accent, fontSize: 18 },
+  folderName: { color: C.text, fontSize: 14, fontWeight: '700' },
+  folderCount: { color: C.textDim, fontSize: 12 },
   header: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.xl, flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   brand: { color: C.accent, fontSize: 28, fontWeight: '900', letterSpacing: 4, fontStyle: 'italic' },
   meta: { color: C.textDim, fontSize: 13 },

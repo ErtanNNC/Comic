@@ -8,14 +8,16 @@ import {
   extractArchiveFile,
   loadLibrary,
   loadProgress,
+  loadFolders,
   loadSettings,
   newId,
   saveLibrary,
+  saveFolders,
   saveProgress,
   saveSettings,
   tempDir,
 } from './storage';
-import type { Comic, ImportJob, Progress, Settings } from './types';
+import type { Comic, Folder, ImportJob, Progress, Settings } from './types';
 
 type Store = {
   comics: Comic[];
@@ -30,6 +32,11 @@ type Store = {
   removeComic: (comicId: string) => void;
   updateSettings: (patch: Partial<Settings>) => void;
   setPanels: (comicId: string, page: number, panels: [number, number, number, number][], rtl: boolean) => void;
+  folders: Folder[];
+  createFolder: (name: string, firstSeries?: string) => void;
+  renameFolder: (id: string, name: string) => void;
+  deleteFolder: (id: string) => void;
+  toggleInFolder: (id: string, series: string) => void;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -45,6 +52,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<Record<string, Progress>>(loadProgress);
   const [settings, setSettings] = useState<Settings>(loadSettings);
   const [jobs, setJobs] = useState<ImportJob[]>([]);
+  const [folders, setFolders] = useState<Folder[]>(loadFolders);
 
   // Persist on change (cheap JSON files).
   const first = useRef(true);
@@ -61,6 +69,10 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     if (first.current) return;
     saveSettings(settings);
   }, [settings]);
+  useEffect(() => {
+    if (first.current) return;
+    saveFolders(folders);
+  }, [folders]);
   useEffect(() => {
     first.current = false;
   }, []);
@@ -195,6 +207,22 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const createFolder = useCallback((name: string, firstSeries?: string) => {
+    const clean = name.trim();
+    if (!clean) return;
+    setFolders((fs) => [...fs, { id: newId(), name: clean, series: firstSeries ? [firstSeries] : [], createdAt: Date.now() }]);
+  }, []);
+  const renameFolder = useCallback((id: string, name: string) => {
+    const clean = name.trim();
+    if (clean) setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name: clean } : f)));
+  }, []);
+  const deleteFolder = useCallback((id: string) => setFolders((fs) => fs.filter((f) => f.id !== id)), []);
+  const toggleInFolder = useCallback((id: string, series: string) => {
+    setFolders((fs) =>
+      fs.map((f) => (f.id !== id ? f : { ...f, series: f.series.includes(series) ? f.series.filter((x) => x !== series) : [...f.series, series] })),
+    );
+  }, []);
+
   const updateSettings = useCallback((patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch })), []);
 
   const value = useMemo<Store>(
@@ -211,8 +239,31 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       removeComic,
       updateSettings,
       setPanels,
+      folders,
+      createFolder,
+      renameFolder,
+      deleteFolder,
+      toggleInFolder,
     }),
-    [comics, progress, settings, jobs, enqueue, retryJob, clearFinishedJobs, setPage, setFinished, removeComic, updateSettings, setPanels],
+    [
+      comics,
+      progress,
+      settings,
+      jobs,
+      enqueue,
+      retryJob,
+      clearFinishedJobs,
+      setPage,
+      setFinished,
+      removeComic,
+      updateSettings,
+      setPanels,
+      folders,
+      createFolder,
+      renameFolder,
+      deleteFolder,
+      toggleInFolder,
+    ],
   );
 
   return <Ctx value={value}>{children}</Ctx>;

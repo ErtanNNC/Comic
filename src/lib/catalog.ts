@@ -52,6 +52,28 @@ export function fetchEpisodes(seriesId: number): Promise<CatalogEpisode[]> {
   );
 }
 
+export type FeedEpisode = CatalogEpisode & { comic_series: { title: string } | null };
+
+const EP_FIELDS = 'id,series_id,url,title,number,position,drive_id,cover_url,published_at,comic_series(title)';
+
+/** Most recently published episodes across the catalog ("Yeni bölümler"). */
+export function fetchLatestEpisodes(): Promise<FeedEpisode[]> {
+  return rest<FeedEpisode[]>(`comic_episodes?select=${EP_FIELDS}&order=published_at.desc&limit=20`);
+}
+
+/** Episode title search across all series. */
+export function searchEpisodes(q: string): Promise<FeedEpisode[]> {
+  const term = q.replace(/[*,()]/g, ' ').trim();
+  return rest<FeedEpisode[]>(`comic_episodes?select=${EP_FIELDS}&title=ilike.*${encodeURIComponent(term)}*&order=published_at.desc&limit=30`);
+}
+
+/** Turkish-insensitive comparison key for search ("Örümcek" ~ "orumcek"). */
+export function fold(s: string): string {
+  return s.toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
+}
+
+export const isRecent = (iso: string | null, days = 14) => !!iso && Date.now() - Date.parse(iso) < days * 86400000;
+
 // --- Offline cache: the last successful response is kept on disk -----------------------
 
 function cacheFile(key: string) {

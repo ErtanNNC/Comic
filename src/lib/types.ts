@@ -53,3 +53,11 @@ export type ImportJob = {
   /** Where the archive comes from. */
   source: { kind: 'drive'; fileId: string; series?: string; issue?: number } | { kind: 'local'; uri: string; series?: string };
 };
+
+export type Folder = {
+  id: string;
+  name: string;
+  /** Series titles (same key the catalog and the library use). */
+  series: string[];
+  createdAt: number;
+};

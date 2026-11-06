@@ -2,12 +2,13 @@ import { Directory, File, Paths } from 'expo-file-system';
 
 import { detectKind, extractZip, KIND_MESSAGES } from './archive';
 import { extractPdfImages } from './pdf';
-import type { Comic, Page, Progress, Settings } from './types';
+import type { Comic, Folder, Page, Progress, Settings } from './types';
 
 const ROOT = new Directory(Paths.document, 'comics');
 const LIBRARY_FILE = new File(Paths.document, 'library.json');
 const PROGRESS_FILE = new File(Paths.document, 'progress.json');
 const SETTINGS_FILE = new File(Paths.document, 'settings.json');
+const FOLDERS_FILE = new File(Paths.document, 'folders.json');
 
 export const DEFAULT_SETTINGS: Settings = { mode: 'paged', rtl: false, keepAwake: true, guided: true };
 
@@ -31,6 +32,12 @@ export const loadProgress = () => readJson<Record<string, Progress>>(PROGRESS_FI
 export const saveProgress = (p: Record<string, Progress>) => writeJson(PROGRESS_FILE, p);
 export const loadSettings = () => ({ ...DEFAULT_SETTINGS, ...readJson<Partial<Settings>>(SETTINGS_FILE, {}) });
 export const saveSettings = (s: Settings) => writeJson(SETTINGS_FILE, s);
+export const loadFolders = () =>
+  readJson<Folder[]>(FOLDERS_FILE, [
+    { id: 'fav', name: 'Favoriler', series: [], createdAt: 0 },
+    { id: 'later', name: 'Okuyacaklarım', series: [], createdAt: 1 },
+  ]);
+export const saveFolders = (f: Folder[]) => writeJson(FOLDERS_FILE, f);
 
 export function comicDir(id: string): Directory {
   return new Directory(ROOT, id);
