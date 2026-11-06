@@ -102,7 +102,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
           id: comicId,
           title: parsed.title,
           series: job.source.series || parsed.series,
-          issue: parsed.issue,
+          issue: job.source.kind === 'drive' && job.source.issue !== undefined ? job.source.issue : parsed.issue,
           pages,
           source: job.source.kind === 'drive' ? 'drive' : 'file',
           driveId: job.source.kind === 'drive' ? job.source.fileId : undefined,

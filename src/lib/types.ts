@@ -45,5 +45,5 @@ export type ImportJob = {
   error?: string;
   comicId?: string;
   /** Where the archive comes from. */
-  source: { kind: 'drive'; fileId: string; series?: string } | { kind: 'local'; uri: string; series?: string };
+  source: { kind: 'drive'; fileId: string; series?: string; issue?: number } | { kind: 'local'; uri: string; series?: string };
 };

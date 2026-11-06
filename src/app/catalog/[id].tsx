@@ -35,7 +35,7 @@ export default function CatalogSeriesScreen() {
   const download = (eps: CatalogEpisode[]) => {
     const fresh = eps.filter((e) => e.drive_id && (!byDrive.has(e.drive_id) || byDrive.get(e.drive_id)?.status === 'error'));
     if (fresh.length === 0) return;
-    enqueue(fresh.map((e) => ({ name: e.title, source: { kind: 'drive' as const, fileId: e.drive_id!, series: seriesTitle } })));
+    enqueue(fresh.map((e) => ({ name: e.title, source: { kind: 'drive' as const, fileId: e.drive_id!, series: seriesTitle, issue: e.number ?? undefined } })));
   };
 
   const missing = (episodes ?? []).filter((e) => e.drive_id && !byDrive.has(e.drive_id));

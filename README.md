@@ -14,6 +14,13 @@ npm run typecheck && npx expo lint
 
 Kullanılan tüm native modüller Expo Go içinde var, o yüzden ilk denemeler için development build gerekmiyor.
 
+## Katalog (sunucu tarafı)
+
+- `supabase/functions/comics-crawl`: cizgiarsiv.com'un WordPress API'sini (`/wp-json/wp/v2/categories` ve `posts`) okur. Her kategori bir seri, her yazı bir bölüm. Bölümün Google Drive dosya kimliği, yazıdaki gömülü önizlemeden alınır. Sonuçlar `comic_series` ve `comic_episodes` tablolarına yazılır.
+- Tarama her gün 04:17 UTC'de (İstanbul 07:17) `pg_cron` ile kendiliğinden çalışır. İlk taramada 22 seri ve 336 bölüm geldi, hepsinin Drive bağlantısı var.
+- Tablolar Supabase'deki **Yolda** projesinde, Yolda'nın kendi tablolarından ayrı duruyor. Uygulama yalnızca okuyabilir (RLS), yazma işini sadece tarama fonksiyonu yapar.
+- Uygulama açılışta **Katalog** sekmesini gösterir: arama, seri kapakları, bölüm listesi, tek tek ya da "Tümünü indir".
+
 ## Neler var (v0.1)
 
 **Kütüphane**
