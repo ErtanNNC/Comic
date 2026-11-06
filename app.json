@@ -40,6 +40,17 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "05f41fcc-c813-47a1-89d7-60b93e5015d7"
+      }
+    },
+    "owner": "supertan83s-team"
   }
 }
