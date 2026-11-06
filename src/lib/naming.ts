@@ -37,6 +37,12 @@ export function parseComicName(fileName: string): { title: string; series: strin
     const series = m[1].replace(/[\s\-–:#.,]+$/g, '').trim();
     return { title, series: series || cleaned, issue: parseFloat(m[2]) };
   }
+  // Website episode titles: "Ultimate Spiderman (2000) – 12 Büyük Güç" (series keeps its year).
+  const dash = title.match(/^(.+?)\s+[–—-]\s+#?(\d{1,4}(?:\.\d+)?)(?:\s|$)/);
+  if (dash) return { title, series: dash[1].trim(), issue: parseFloat(dash[2]) };
+  // "Bölüm 13 – Başlık" / "Sayı 4: Başlık"
+  const kw = title.match(/^(.*?)\s*(?:bölüm|bolum|sayı|sayi|cilt|issue|chapter)\s*#?(\d{1,4}(?:\.\d+)?)\b/i);
+  if (kw) return { title, series: kw[1].replace(/[\s\-–—:#.,]+$/g, '').trim() || cleaned, issue: parseFloat(kw[2]) };
   return { title, series: cleaned || title };
 }
 

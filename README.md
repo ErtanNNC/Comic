@@ -7,7 +7,8 @@ Google Drive'daki (veya telefondaki) CBZ ve PDF çizgi romanları indirip cihazd
 ```bash
 npm install
 npx expo start          # QR kodu Expo Go ile okut
-npm test                # dosya adı / Drive / CBZ açma testleri
+npm test                # dosya adı / Drive / CBZ / PDF testleri
+npm run test:site       # Keşfet betiği, sahte site üzerinde (Playwright)
 npm run typecheck && npx expo lint
 ```
 
@@ -19,6 +20,13 @@ Kullanılan tüm native modüller Expo Go içinde var, o yüzden ilk denemeler i
 - "Okumaya devam et" satırı: yarım kalan sayılar, son okunan en başta.
 - Sayılar seri halinde gruplanır. Seri adı ve sayı numarası dosya adından çıkarılır (`Batman_012_(2016).cbz` → *Batman #12*). Drive klasöründen indirilenlerde seri adı olarak klasör adı kullanılır.
 - Seri sayfası: sayı sırası, ilerleme çubukları, "Oku / Devam et" (ilk okunmamış sayıyı açar). Uzun basınca okundu işaretleme ve cihazdan silme seçenekleri çıkar.
+
+**Keşfet (cizgiarsiv.com uygulamanın içinde)**
+- Site uygulamanın içindeki tarayıcıda açılır, gezinmek sitedekiyle aynı.
+- **Bölüm sayfasında:** "Bu bölümü indir" düğmesi. Sayfaya gömülü Google Drive dosyası otomatik bulunur.
+- **Seri sayfasında:** "Tüm seriyi indir" düğmesi. Sayfalama (`/page/N/`) takip edilir, her bölüm sayfası taranıp Drive dosyaları toplanır, onay alındıktan sonra hepsi kuyruğa eklenir. Seri adı sayfa başlığından alınır.
+- Kütüphanede zaten olan ya da inmekte olan bölümler atlanır.
+- Betik sitenin HTML yapısına bağlı değil: Drive bağlantılarını sayfanın herhangi bir yerinden bulur ve bölüm listesini, aynı siteye giden bağlantıların en kalabalık grubu olarak tahmin eder. Kenar çubukları ve menüler hariç tutulur. `npm run test:site` bu betiği sitenin sahte bir kopyasında Chromium ile test eder.
 
 **İndirme**
 - Google Drive **dosya** bağlantısı → doğrudan indirilir.
@@ -38,7 +46,7 @@ Kullanılan tüm native modüller Expo Go içinde var, o yüzden ilk denemeler i
 
 ## Araştırma notları
 
-**cizgiarsiv.com:** bu geliştirme ortamının ağ politikası siteye ve drive.google.com'a erişimi engelledi, bu yüzden site doğrudan incelenemedi. Uygulama hiçbir siteye bağımlı olmayacak şekilde tasarlandı: herhangi bir herkese açık Drive dosya veya klasör bağlantısıyla çalışır.
+**cizgiarsiv.com:** WordPress tabanlı bir site. Akış şöyle: ana sayfa → seri sayfası (`/category/<grup>/<seri>/`, sayfa başına 10 bölüm, sayfalamalı) → bölüm sayfası (`/YYYY/MM/DD/<slug>/`, içinde gömülü Google Drive PDF önizlemesi) → `drive.google.com/file/d/<ID>/view`. Bu yapı, kullanıcının paylaştığı ekran kaydından çıkarıldı; geliştirme ortamı siteye doğrudan erişemiyor. İncelenen iki örnek PDF (iTextSharp) sayfa başına bir JPEG içeriyor.
 
 **Marvel Unlimited'dan alınanlar:**
 | Marvel Unlimited | Panel |

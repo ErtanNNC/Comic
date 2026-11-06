@@ -9,6 +9,10 @@ export default function TabsLayout() {
         <NativeTabs.Trigger.Label>Kütüphane</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'books.vertical', selected: 'books.vertical.fill' }} md="auto_stories" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="explore">
+        <NativeTabs.Trigger.Label>Keşfet</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'safari', selected: 'safari.fill' }} md="explore" />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="add">
         <NativeTabs.Trigger.Label>İndir</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'arrow.down.circle', selected: 'arrow.down.circle.fill' }} md="download" />

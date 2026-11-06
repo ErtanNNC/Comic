@@ -19,6 +19,13 @@ test('parseComicName splits series and issue', () => {
   const copy = parseComicName('Yeni İntikamcılar 001 (Enygma&Glint).pdf adlı dosyanın kopyası');
   assert.deepEqual(copy, { title: 'Yeni İntikamcılar 001 (Enygma&Glint)', series: 'Yeni İntikamcılar', issue: 1 });
   assert.equal(parseComicName('Copy of Tex 5 (1).cbz').issue, 5);
+  assert.deepEqual(parseComicName('Ultimate Spiderman (2000) – 12 Büyük Güç'), {
+    title: 'Ultimate Spiderman (2000) – 12 Büyük Güç',
+    series: 'Ultimate Spiderman (2000)',
+    issue: 12,
+  });
+  assert.equal(parseComicName('Ultimate Spiderman (2000) – 0 Özet').issue, 0);
+  assert.equal(parseComicName('Bölüm 13 – Gerçekten Korkunç Bir Şey Görmek İster Misin?').issue, 13);
 });
 
 test('parseDriveLink understands common share URLs', () => {
