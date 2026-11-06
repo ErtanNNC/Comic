@@ -5,6 +5,18 @@ export function naturalCompare(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 }
 
+/**
+ * Undo the renames Google Drive applies to copies:
+ * "X.pdf adlı dosyanın kopyası", "Copy of X.pdf", "X (1).pdf".
+ */
+export function cleanDriveName(name: string): string {
+  return name
+    .replace(/\s+adlı dosyanın kopyası$/i, '')
+    .replace(/^(?:copy of|kopyası:?)\s+/i, '')
+    .replace(/\s+\(\d+\)(\.[a-z0-9]+)$/i, '$1')
+    .trim();
+}
+
 export function stripExtension(name: string): string {
   return name.replace(ARCHIVE_EXT, '');
 }
@@ -14,7 +26,7 @@ export function stripExtension(name: string): string {
  * into a series name and issue number.
  */
 export function parseComicName(fileName: string): { title: string; series: string; issue?: number } {
-  const title = stripExtension(fileName).replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const title = stripExtension(cleanDriveName(fileName)).replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
   // Drop bracketed groups: (2016), [Scanner], {tags}
   const cleaned = title.replace(/[([{][^)\]}]*[)\]}]/g, ' ').replace(/\s+/g, ' ').trim();
 

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { zipSync, strToU8 } from 'fflate';
@@ -15,6 +16,9 @@ test('parseComicName splits series and issue', () => {
   assert.equal(parseComicName('Spider-Man #3.cbr').issue, 3);
   assert.equal(parseComicName('Watchmen Cilt 2.zip').issue, 2);
   assert.deepEqual(parseComicName('Maus.cbz'), { title: 'Maus', series: 'Maus' });
+  const copy = parseComicName('Yeni İntikamcılar 001 (Enygma&Glint).pdf adlı dosyanın kopyası');
+  assert.deepEqual(copy, { title: 'Yeni İntikamcılar 001 (Enygma&Glint)', series: 'Yeni İntikamcılar', issue: 1 });
+  assert.equal(parseComicName('Copy of Tex 5 (1).cbz').issue, 5);
 });
 
 test('parseDriveLink understands common share URLs', () => {
@@ -28,7 +32,7 @@ test('parseDriveLink understands common share URLs', () => {
 test('parseFolderHtml reads embeddedfolderview markup', () => {
   const html = `<html><head><title>Tex Arşivi &amp; Özel</title></head><body><div class="flip-entries">
   <div class="flip-entry" id="entry-1SubFolderAAAA" tabindex="0" role="link"><div class="flip-entry-info"><a href="https://drive.google.com/drive/folders/1SubFolderAAAA" target="_blank"><div class="flip-entry-visual"></div><div class="flip-entry-list-icon"></div><div class="flip-entry-title">Ciltler</div></a></div></div>
-  <div class="flip-entry" id="entry-1FileBBBBBBBB" tabindex="0" role="link"><div class="flip-entry-info"><a href="https://drive.google.com/file/d/1FileBBBBBBBB/view?usp=drive_web" target="_blank"><div class="flip-entry-visual"></div><div class="flip-entry-title">Tex 001 &#39;Kızıl&#39;.cbz</div></a></div><div class="flip-entry-last-modified"><div>12 Mar 2021</div></div></div>
+  <div class="flip-entry" id="entry-1FileBBBBBBBB" tabindex="0" role="link"><div class="flip-entry-info"><a href="https://drive.google.com/file/d/1FileBBBBBBBB/view?usp=drive_web" target="_blank"><div class="flip-entry-visual"></div><div class="flip-entry-title">Tex 001 &#39;Kızıl&#39;.cbz adlı dosyanın kopyası</div></a></div><div class="flip-entry-last-modified"><div>12 Mar 2021</div></div></div>
   </div></body></html>`;
   const r = parseFolderHtml(html);
   assert.equal(r.title, 'Tex Arşivi & Özel');

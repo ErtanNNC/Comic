@@ -1,4 +1,4 @@
-import { isArchiveName } from './naming';
+import { cleanDriveName, isArchiveName } from './naming';
 
 export type DriveLink = { kind: 'file' | 'folder'; id: string };
 
@@ -41,7 +41,7 @@ export function parseFolderHtml(html: string): { title: string; entries: DriveEn
   const re = /<div class="flip-entry" id="entry-([A-Za-z0-9_-]+)"[\s\S]*?<a href="([^"]*)"[\s\S]*?<div class="flip-entry-title">([^<]*)<\/div>/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html))) {
-    entries.push({ id: m[1], isFolder: m[2].includes('/folders/'), name: decodeHtml(m[3]).trim() });
+    entries.push({ id: m[1], isFolder: m[2].includes('/folders/'), name: cleanDriveName(decodeHtml(m[3]).trim()) });
   }
   return { title, entries };
 }
